@@ -1,0 +1,10 @@
+## YAML Template.
+name: CraftTableAutomation
+main: de.guntram.bukkit.crafttableautomation.CraftTableAutomation
+version: 0.1
+commands:
+    cta:
+        description: Whatever.
+        usage: /cta c1 | c2 | name | export
+        permission: cta.basic
+        permission-message: You may not use cta.
