@@ -22,6 +22,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 /**
@@ -55,7 +56,7 @@ public class CTABlockListener implements Listener {
         Material material=block.getType();
         Location location=block.getLocation();
         
-        plugin.updateBlock(world, location, material, UpdateType.PLACE);
+        plugin.updateBlock(location, material, UpdateType.PLACE);
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -66,7 +67,7 @@ public class CTABlockListener implements Listener {
         Material material=block.getType();
         Location location=block.getLocation();
         
-        plugin.updateBlock(world, location, material, UpdateType.FORM);
+        plugin.updateBlock(location, material, UpdateType.FORM);
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -78,7 +79,7 @@ public class CTABlockListener implements Listener {
         Material material=block.getType();
         Location location=block.getLocation();
         
-        plugin.updateBlock(world, location, material, UpdateType.DAMAGE);
+        plugin.updateBlock(location, material, UpdateType.DAMAGE);
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -90,30 +91,33 @@ public class CTABlockListener implements Listener {
         Material material=block.getType();
         Location location=block.getLocation();
         
-        plugin.updateBlock(world, location, material, UpdateType.BREAK);
+        plugin.updateBlock(location, material, UpdateType.BREAK);
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPistonExtend(BlockPistonExtendEvent e) {
         if (e.isCancelled())      return;
-        
+
         BlockFace direction=e.getDirection();
         List<Block>blocks=e.getBlocks();
-        List<Block>withpiston=new ArrayList<Block>();
+        List<Block>withpiston=new ArrayList<>();
+        List<SimpleRecipe[]>stacks=new ArrayList<>();
         withpiston.add(e.getBlock());
         withpiston.addAll(blocks);
 
         World world=e.getBlock().getWorld();
         Vector delta=vectorForDirection(direction);
-        for (Block block:withpiston) {
+        for (int i=0; i<withpiston.size(); i++) {
+            Block block=withpiston.get(i);
             Material material=block.getType();
             Location location=block.getLocation();
-            plugin.updateBlock(world, location, material, UpdateType.BREAK);
+            stacks.add(i, plugin.updateBlock(location, material, UpdateType.BREAK));
         }
-        for (Block block:withpiston) {
+        for (int i=0; i<withpiston.size(); i++) {
+            Block block=withpiston.get(i);
             Material material=block.getType();
             Location location=block.getLocation();
-            plugin.updateBlock(world, location.add(delta), material, UpdateType.PLACE);
+            plugin.updateBlock(location.add(delta), material, UpdateType.PLACE, stacks.get(i));
         }
     }
     
@@ -123,21 +127,24 @@ public class CTABlockListener implements Listener {
 
         BlockFace direction=e.getDirection();
         List<Block>blocks=e.getBlocks();
-        List<Block>withpiston=new ArrayList<Block>();
+        List<Block>withpiston=new ArrayList<>();
+        List<SimpleRecipe[]>stacks=new ArrayList<>();
         withpiston.add(e.getBlock());
         withpiston.addAll(blocks);
 
         World world=e.getBlock().getWorld();
         Vector delta=vectorForDirection(direction);
-        for (Block block:withpiston) {
+        for (int i=0; i<withpiston.size(); i++) {
+            Block block=withpiston.get(i);
             Material material=block.getType();
             Location location=block.getLocation();
-            plugin.updateBlock(world, location, material, UpdateType.BREAK);
+            stacks.add(i, plugin.updateBlock(location, material, UpdateType.BREAK));
         }
-        for (Block block:withpiston) {
+        for (int i=0; i<withpiston.size(); i++) {
+            Block block=withpiston.get(i);
             Material material=block.getType();
             Location location=block.getLocation();
-            plugin.updateBlock(world, location.add(delta), material, UpdateType.PLACE);
+            plugin.updateBlock(location.add(delta), material, UpdateType.PLACE, stacks.get(i));
         }
     }
     
@@ -149,7 +156,7 @@ public class CTABlockListener implements Listener {
         Material material=block.getType();
         Location location=block.getLocation();
 
-        plugin.updateBlock(world, location, material, UpdateType.FROMTO);
+        plugin.updateBlock(location, material, UpdateType.FROMTO);
     }
     
     private Vector vectorForDirection(BlockFace direction) {
