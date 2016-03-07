@@ -5,42 +5,74 @@
  */
 package de.guntram.bukkit.crafttableautomation;
 
-import java.lang.reflect.Field;
+
+import de.guntram.bukkit.crafttableautomation.helpers.WorldLocationHelper;
+import java.util.HashSet;
 import java.util.logging.Level;
-import net.minecraft.server.v1_9_R1.Block;
-import net.minecraft.server.v1_9_R1.BlockPosition;
-import net.minecraft.server.v1_9_R1.Blocks;
-import net.minecraft.server.v1_9_R1.ContainerWorkbench;
-import net.minecraft.server.v1_9_R1.World;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftInventoryView;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
+import org.bukkit.World;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  *
  * @author gbl
  */
-public class CraftTableAutomation extends JavaPlugin implements Listener {
+public class CraftTableAutomation extends JavaPlugin  {
+
+
+    private HashSet<WorldLocationHelper>allWorkBenches;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        getServer().getPluginManager().registerEvents(this, this);
-    }    
+        CTABlockListener blockListener=new CTABlockListener(this);
+        getServer().getPluginManager().registerEvents(blockListener, this);
+        allWorkBenches=new HashSet();
+    }
     
     @Override
     public void onDisable() {
     }
     
+    public void updateBlock(World world, Location location, Material material, CTABlockListener.UpdateType event) {
+        if (material==Material.HOPPER || material==Material.WORKBENCH)
+            getLogger().log(Level.INFO, "World "+world.getName()+" at "+location.getBlockX()+"/"+location.getBlockY()+
+                "/"+location.getBlockZ()+" Material "+material+" by event "+event);
+        
+        if (material==Material.HOPPER && world.getBlockAt(location.add(0, 1, 0)).getType()==Material.WORKBENCH)
+            changeWorkbenchAt(world, location.add(0, 1, 0), event);
+        else if (material==Material.WORKBENCH && world.getBlockAt(location.subtract(0, 1, 0)).getType()==Material.HOPPER)
+            changeWorkbenchAt(world, location, event);
+    }
+    
+    private void changeWorkbenchAt(World world, Location loc, CTABlockListener.UpdateType event) {
+        if (event==CTABlockListener.UpdateType.PLACE) {
+            allWorkBenches.add(new WorldLocationHelper(world, loc));
+        } else if (event==CTABlockListener.UpdateType.BREAK) {
+            allWorkBenches.remove(new WorldLocationHelper(world, loc));
+        }
+    }
+    
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        String commandName=command.getName();
+        if (commandName.equalsIgnoreCase("cta")) {
+            if (args.length==1 && args[0].equalsIgnoreCase("list")) {
+                sender.sendMessage("§2"+allWorkBenches.size()+" Automatic Crafttables");
+                for (WorldLocationHelper helper:allWorkBenches) {
+                    sender.sendMessage(helper.toString());
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+/*    
     @EventHandler
     public void onWhatever(CraftItemEvent event) {            
 //    public void onWhatever(PrepareItemCraftEvent event) {
@@ -106,4 +138,6 @@ public class CraftTableAutomation extends JavaPlugin implements Listener {
             }
         }
     }
+*/    
+
 }
