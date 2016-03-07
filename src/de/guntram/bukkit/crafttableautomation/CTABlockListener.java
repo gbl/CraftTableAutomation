@@ -22,7 +22,6 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 /**
@@ -101,7 +100,7 @@ public class CTABlockListener implements Listener {
         BlockFace direction=e.getDirection();
         List<Block>blocks=e.getBlocks();
         List<Block>withpiston=new ArrayList<>();
-        List<SimpleRecipe[]>stacks=new ArrayList<>();
+        List<CraftTableConfiguration>stacks=new ArrayList<>();
         withpiston.add(e.getBlock());
         withpiston.addAll(blocks);
 
@@ -128,7 +127,7 @@ public class CTABlockListener implements Listener {
         BlockFace direction=e.getDirection();
         List<Block>blocks=e.getBlocks();
         List<Block>withpiston=new ArrayList<>();
-        List<SimpleRecipe[]>stacks=new ArrayList<>();
+        List<CraftTableConfiguration>stacks=new ArrayList<>();
         withpiston.add(e.getBlock());
         withpiston.addAll(blocks);
 

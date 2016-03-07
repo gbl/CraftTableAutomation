@@ -23,7 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class CraftTableAutomation extends JavaPlugin  {
 
 
-    private HashMap<Location,SimpleRecipe[]>allWorkBenches;
+    private HashMap<Location,CraftTableConfiguration>allWorkBenches;
 
     @Override
     public void onEnable() {
@@ -39,11 +39,11 @@ public class CraftTableAutomation extends JavaPlugin  {
     public void onDisable() {
     }
     
-    public SimpleRecipe[] updateBlock(Location location, Material material, CTABlockListener.UpdateType event) {
+    public CraftTableConfiguration updateBlock(Location location, Material material, CTABlockListener.UpdateType event) {
         return updateBlock(location, material, event, null);
     }
     
-    public SimpleRecipe[] updateBlock(Location location, Material material, CTABlockListener.UpdateType event, SimpleRecipe[] stack) {
+    public CraftTableConfiguration updateBlock(Location location, Material material, CTABlockListener.UpdateType event, CraftTableConfiguration stack) {
         if (material==Material.HOPPER || material==Material.WORKBENCH)
             getLogger().log(Level.INFO, "World "+location.getWorld().getName()+" at "+location.getBlockX()+"/"+location.getBlockY()+
                 "/"+location.getBlockZ()+" Material "+material+" by event "+event);
@@ -58,18 +58,18 @@ public class CraftTableAutomation extends JavaPlugin  {
             return null;
     }
     
-    private SimpleRecipe[] changeWorkbenchAt(Location loc, CTABlockListener.UpdateType event, SimpleRecipe[] stack) {
+    private CraftTableConfiguration changeWorkbenchAt(Location loc, CTABlockListener.UpdateType event, CraftTableConfiguration stack) {
         if (event==CTABlockListener.UpdateType.PLACE) {
-            allWorkBenches.put(loc, stack==null ? new SimpleRecipe[0] : stack);
+            allWorkBenches.put(loc, stack==null ? new CraftTableConfiguration(0) : stack);
         } else if (event==CTABlockListener.UpdateType.BREAK) {
-            SimpleRecipe[] previous=allWorkBenches.get(loc);
+            CraftTableConfiguration previous=allWorkBenches.get(loc);
             allWorkBenches.remove(loc);
             return previous;
         }
         return null;
     }
     
-    public boolean configureBenchAt(Location loc, SimpleRecipe[] stacks) {
+    public boolean configureBenchAt(Location loc, CraftTableConfiguration stacks) {
         for (Location x: allWorkBenches.keySet()) {
             getLogger().info("loc="+loc.toString()+" ,x="+x.toString()+"equal="+(loc.equals(x)));
         }
@@ -89,12 +89,12 @@ public class CraftTableAutomation extends JavaPlugin  {
                 sender.sendMessage("§2"+allWorkBenches.size()+" Automatic Crafttables");
                 for (Location location:allWorkBenches.keySet()) {
                     sender.sendMessage(location.toString());
-                    SimpleRecipe[] content=allWorkBenches.get(location);
-                    if (content!=null && content.length>0) {
-                        sender.sendMessage("   creating "+content[0].getAmount()+" of "+content[0].getMaterial()+" subtype "+content[0].getSubtype());
-                        for (int i=1; i<content.length; i++) {
+                    CraftTableConfiguration content=allWorkBenches.get(location);
+                    if (content!=null && content.size()>0) {
+                        sender.sendMessage("   creating "+content.get(0).getAmount()+" of "+content.get(0).getMaterial()+" subtype "+content.get(0).getSubtype());
+                        for (int i=1; i<content.size(); i++) {
                             //if (content[i].getAmount()!=0) {
-                                sender.sendMessage("     using "+content[i].getAmount()+" of "+content[i].getMaterial()+" subtype "+content[i].getSubtype());
+                                sender.sendMessage("     using "+content.get(i).getAmount()+" of "+content.get(i).getMaterial()+" subtype "+content.get(i).getSubtype());
                             //}
                         }
                     }

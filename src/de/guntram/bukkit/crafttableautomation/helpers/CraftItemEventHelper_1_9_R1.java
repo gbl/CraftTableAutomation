@@ -6,6 +6,7 @@
 package de.guntram.bukkit.crafttableautomation.helpers;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.logging.Level;
 import net.minecraft.server.v1_9_R1.BlockPosition;
 import net.minecraft.server.v1_9_R1.ContainerWorkbench;
@@ -14,15 +15,18 @@ import static org.bukkit.Bukkit.getLogger;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftInventoryView;
+import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 
 /**
  *
  * @author gbl
  */
-public class CraftItemEventHelper_1_9_R1 implements CraftItemEventHelper {
+public class CraftItemEventHelper_1_9_R1 extends CraftItemEventHelper {
 
     /**
      *
@@ -60,5 +64,10 @@ public class CraftItemEventHelper_1_9_R1 implements CraftItemEventHelper {
     @Override
     public Player getPlayer(InventoryHolder holder) {
         return ((CraftPlayer)holder).getPlayer();
+    }
+
+    @Override
+    public Map<Character, ItemStack> getIngredientMap(Recipe recipe) {
+        return ((CraftShapedRecipe)recipe).getIngredientMap();
     }
 }

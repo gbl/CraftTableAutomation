@@ -6,12 +6,7 @@
 package de.guntram.bukkit.crafttableautomation;
 
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelper;
-import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelper_1_9_R1;
-import java.util.logging.Level;
-import static org.bukkit.Bukkit.getLogger;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,7 +16,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 /**
@@ -35,7 +29,7 @@ public class CraftItemEventListener implements Listener {
     
     CraftItemEventListener(CraftTableAutomation p) {
         plugin=p;
-        helper=new CraftItemEventHelper_1_9_R1();
+        helper=CraftItemEventHelper.getInstance();
     }
 
     @EventHandler
@@ -73,7 +67,7 @@ public class CraftItemEventListener implements Listener {
             
             String feedback="I can't make sense of that recipe";
             if (recipe instanceof CraftShapedRecipe) {
-                SimpleRecipe[] clone=SimpleRecipe.fromRecipe((CraftShapedRecipe) recipe);
+                CraftTableConfiguration clone=CraftTableConfiguration.fromRecipe(recipe);
                 if (plugin.configureBenchAt(loc, clone))
                     feedback="You configured your crafttable";
                 else
