@@ -6,14 +6,22 @@
 package de.guntram.bukkit.crafttableautomation;
 
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -81,6 +89,34 @@ public class CraftTableAutomation extends JavaPlugin  {
         }
     }
     
+    public void saveConfigFile(File file) throws IOException {
+        try (PrintWriter writer=new PrintWriter(new FileWriter(file))) {
+            for (Location location:allWorkBenches.keySet()) {
+                writer.print(location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ());
+                writer.print(":");
+                CraftTableConfiguration config=allWorkBenches.get(location);
+                writer.print(config.toString());
+                writer.println();
+            }
+        }
+    }
+    
+    public void loadConfigFile(File file) throws IOException {
+        BufferedReader reader=new BufferedReader(new FileReader(file));
+        String s;
+        allWorkBenches=new HashMap();
+        while ((s=reader.readLine())!=null) {
+            String[] keyval=s.split(":");
+            assert(keyval.length==2);
+            String[] locstr=keyval[0].split("/");
+            assert(locstr.length==4);
+            World world=Bukkit.getWorld(locstr[0]);
+            Location loc=new Location(world, Integer.parseInt(locstr[1]), Integer.parseInt(locstr[2]), Integer.parseInt(locstr[3]));
+            CraftTableConfiguration config=CraftTableConfiguration.fromString(keyval[1]);
+            allWorkBenches.put(loc, config);
+        }
+    }
+    
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String commandName=command.getName();
@@ -111,6 +147,24 @@ public class CraftTableAutomation extends JavaPlugin  {
                 ((Player)sender).sendMessage("hashcode L1 "+l1.hashCode());
                 ((Player)sender).sendMessage("hashcode L2 "+l2.hashCode());
                 ((Player)sender).sendMessage("hashcode L3 "+l3.hashCode());
+                return true;
+            }
+            if (args.length==1 && args[0].equalsIgnoreCase("save")) {
+                getDataFolder().mkdirs();
+                File file=new File(getDataFolder(), "tables.txt");
+                try {
+                    saveConfigFile(file);
+                } catch (IOException ex) {
+                    getLogger().log(Level.SEVERE, null, ex);
+                }
+            }
+            if (args.length==1 && args[0].equalsIgnoreCase("load")) {
+                File file=new File(getDataFolder(), "tables.txt");
+                try {
+                    loadConfigFile(file);
+                } catch (IOException ex) {
+                    getLogger().log(Level.SEVERE, null, ex);
+                }
             }
         }
         return false;

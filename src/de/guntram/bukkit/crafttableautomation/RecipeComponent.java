@@ -40,10 +40,13 @@ public class RecipeComponent {
         Material material;
         int subtype;
         String[] parts=s.split(",");
-        if (parts.length!=2)
-            throw new IllegalArgumentException("not 2 components");
+        if (parts.length!=3)
+            throw new IllegalArgumentException("not 3 components: "+s);
         amount=Integer.parseInt(parts[0]);
         material=Material.getMaterial(parts[1]);
+        if (amount==0 || material==null) {
+            throw new IllegalArgumentException("bad RecipeComponent: "+s);
+        }
         subtype=Integer.parseInt(parts[2]);
         return new RecipeComponent(amount, material, subtype);
     }

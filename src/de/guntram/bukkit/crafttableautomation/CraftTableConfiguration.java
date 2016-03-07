@@ -51,4 +51,25 @@ public class CraftTableConfiguration {
     
     RecipeComponent get(int i) { return components[i]; }
     int size() { return components.length; }
+    
+    @Override
+    public String toString() {
+        StringBuilder buf=new StringBuilder();
+        buf.append(components.length);
+        for (RecipeComponent component:components)
+            buf.append(";").append(component.toString());
+        return buf.toString();
+    }
+    
+    static public CraftTableConfiguration fromString(String s) {
+        String[] parts=s.split(";");
+        int size=Integer.parseInt(parts[0]);
+        if (parts.length != size+1)
+            throw new IllegalArgumentException("not a valid config string");
+        CraftTableConfiguration result=new CraftTableConfiguration(size);
+        for (int i=1; i<=size; i++) {
+            result.components[i-1]=RecipeComponent.fromString(parts[i]);
+        }
+        return result;
+    }
 }
