@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,6 +21,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -32,6 +32,7 @@ public class CraftTableAutomation extends JavaPlugin  {
 
 
     private HashMap<Location,CraftTableConfiguration>allWorkBenches;
+    private File configFile;
 
     @Override
     public void onEnable() {
@@ -40,11 +41,16 @@ public class CraftTableAutomation extends JavaPlugin  {
         getServer().getPluginManager().registerEvents(blockListener, this);
         getServer().getPluginManager().registerEvents(new CraftItemEventListener(this), this);
 
+        configFile=new File(getDataFolder(), "tables.txt");
         allWorkBenches=new HashMap();
+        loadConfigFile(configFile);
+        this.getServer().getScheduler().scheduleSyncRepeatingTask((Plugin)this, 
+                       new CraftTableProcessor(this, allWorkBenches), 200L, 20L);        
     }
     
     @Override
     public void onDisable() {
+        saveConfigFile(configFile);
     }
     
     public CraftTableConfiguration updateBlock(Location location, Material material, CTABlockListener.UpdateType event) {
@@ -89,7 +95,7 @@ public class CraftTableAutomation extends JavaPlugin  {
         }
     }
     
-    public void saveConfigFile(File file) throws IOException {
+    public void saveConfigFile(File file) {
         try (PrintWriter writer=new PrintWriter(new FileWriter(file))) {
             for (Location location:allWorkBenches.keySet()) {
                 writer.print(location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ());
@@ -98,22 +104,29 @@ public class CraftTableAutomation extends JavaPlugin  {
                 writer.print(config.toString());
                 writer.println();
             }
+        } catch (IOException ex) {
+            getLogger().log(Level.SEVERE, null, ex);
         }
     }
     
-    public void loadConfigFile(File file) throws IOException {
-        BufferedReader reader=new BufferedReader(new FileReader(file));
+    public void loadConfigFile(File file) {
         String s;
-        allWorkBenches=new HashMap();
-        while ((s=reader.readLine())!=null) {
-            String[] keyval=s.split(":");
-            assert(keyval.length==2);
-            String[] locstr=keyval[0].split("/");
-            assert(locstr.length==4);
-            World world=Bukkit.getWorld(locstr[0]);
-            Location loc=new Location(world, Integer.parseInt(locstr[1]), Integer.parseInt(locstr[2]), Integer.parseInt(locstr[3]));
-            CraftTableConfiguration config=CraftTableConfiguration.fromString(keyval[1]);
-            allWorkBenches.put(loc, config);
+        HashMap<Location,CraftTableConfiguration> tempWorkBenches=new HashMap();
+        try (BufferedReader reader=new BufferedReader(new FileReader(file))) {
+            while ((s=reader.readLine())!=null) {
+                String[] keyval=s.split(":");
+                assert(keyval.length==2);
+                String[] locstr=keyval[0].split("/");
+                assert(locstr.length==4);
+                World world=Bukkit.getWorld(locstr[0]);
+                Location loc=new Location(world, Integer.parseInt(locstr[1]), Integer.parseInt(locstr[2]), Integer.parseInt(locstr[3]));
+                CraftTableConfiguration config=CraftTableConfiguration.fromString(keyval[1]);
+                tempWorkBenches.put(loc, config);
+            }
+            allWorkBenches.clear();
+            allWorkBenches.putAll(tempWorkBenches);
+        } catch (IOException ex) {
+            getLogger().log(Level.SEVERE, null, ex);
         }
     }
     
@@ -152,19 +165,11 @@ public class CraftTableAutomation extends JavaPlugin  {
             if (args.length==1 && args[0].equalsIgnoreCase("save")) {
                 getDataFolder().mkdirs();
                 File file=new File(getDataFolder(), "tables.txt");
-                try {
-                    saveConfigFile(file);
-                } catch (IOException ex) {
-                    getLogger().log(Level.SEVERE, null, ex);
-                }
+                saveConfigFile(file);
             }
             if (args.length==1 && args[0].equalsIgnoreCase("load")) {
                 File file=new File(getDataFolder(), "tables.txt");
-                try {
-                    loadConfigFile(file);
-                } catch (IOException ex) {
-                    getLogger().log(Level.SEVERE, null, ex);
-                }
+                loadConfigFile(file);
             }
         }
         return false;

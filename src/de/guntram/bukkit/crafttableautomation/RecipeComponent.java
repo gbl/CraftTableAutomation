@@ -5,12 +5,7 @@
  */
 package de.guntram.bukkit.crafttableautomation;
 
-import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelper;
-import java.util.ArrayList;
-import java.util.Map;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
 
 /**
  *
