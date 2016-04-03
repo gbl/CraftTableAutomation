@@ -97,7 +97,7 @@ public class CraftTableProcessor implements Runnable {
                     }
                 }
             }
-            plugin.getLogger().info("Receiving slot is "+receivingSlot);
+            plugin.getLogger().fine("Receiving slot is "+receivingSlot);
             if (receivingSlot==-1)
                 continue;
 
@@ -124,13 +124,13 @@ public class CraftTableProcessor implements Runnable {
             if (!processHoppers(world, hoppers, components, toRemove))
                 continue;
             
-            plugin.getLogger().info("Requirements fulfilled at "+entry);
+            plugin.getLogger().fine("Requirements fulfilled at "+entry);
             ItemStack stack;
             if ((stack=receivingInventory.getItem(receivingSlot))==null) {
-                plugin.getLogger().info("    create new itemstack at "+receivingSlot);
+                plugin.getLogger().finer("    create new itemstack at "+receivingSlot);
                 receivingInventory.setItem(receivingSlot, new ItemStack(config.get(0).getMaterial(), config.get(0).getAmount(), (short) config.get(0).getSubtype()));
             } else {
-                plugin.getLogger().info("    incrementing at "+receivingSlot);
+                plugin.getLogger().finer("    incrementing at "+receivingSlot);
                 stack.setAmount(stack.getAmount()+config.get(0).getAmount());
                 // receivingInventory.setItem(receivingSlot, stack); // is this neccesary?
             }
@@ -141,7 +141,7 @@ public class CraftTableProcessor implements Runnable {
     
     public void removeInput(World world, HopperConfig[] hc, ArrayList<RemovalEntry> toRemove) {
         for (RemovalEntry re:toRemove) {
-            plugin.getLogger().info("    remove "+re.amount+" from hopper "+re.hopper+" slot "+re.slot);
+            plugin.getLogger().fine("    remove "+re.amount+" from hopper "+re.hopper+" slot "+re.slot);
             
             Block block=world.getBlockAt(hc[re.hopper].x, hc[re.hopper].y, hc[re.hopper].z);
             if (block.getType()!=Material.HOPPER) {
@@ -156,10 +156,10 @@ public class CraftTableProcessor implements Runnable {
                 continue;
             }
             if (stack.getAmount()<=re.amount) {
-                plugin.getLogger().info("Removed last item");
+                plugin.getLogger().finer("Removed last item");
                 inv.setItem(re.slot, null);
             } else {
-                plugin.getLogger().info("Removing "+re.amount+" items");
+                plugin.getLogger().finer("Removing "+re.amount+" items");
                 stack.setAmount(stack.getAmount()-re.amount);
                 // inv.setItem(re.slot, stack); // needed?
             }
@@ -181,13 +181,13 @@ public class CraftTableProcessor implements Runnable {
               ||  facing==0 && hc[i].face==BlockFace.DOWN))
                 continue;
             
-            plugin.getLogger().info("found hopper at "+hc[i].x+"/"+hc[i].y+"/"+hc[i].z);
+            plugin.getLogger().fine("found hopper at "+hc[i].x+"/"+hc[i].y+"/"+hc[i].z);
             Inventory inv=hopper.getInventory();
             for (RecipeComponent component:components) {
                 for (int j=0; j<inv.getSize(); j++) {
                     ItemStack stack=inv.getItem(j);
                     if (stack!=null)
-                        plugin.getLogger().info("  hopper has "+stack.getAmount()+
+                        plugin.getLogger().finer("  hopper has "+stack.getAmount()+
                                                 " of "+stack.getType()+
                                                 "/"+stack.getDurability()+
                                                 " at "+j);
@@ -195,19 +195,19 @@ public class CraftTableProcessor implements Runnable {
                         plugin.getLogger().warning("Component is null??");
                         continue;
                     }
-                    plugin.getLogger().info("  need "+component.getAmount()+
+                    plugin.getLogger().finer("  need "+component.getAmount()+
                                             " of "+component.getMaterial()+
                                             " subtype "+component.getSubtype());
                     if (stack!=null 
                     && component.getMaterial()==stack.getType()
                     && (component.getSubtype()==32767 || component.getSubtype()==stack.getDurability())) {
-                        plugin.getLogger().info("  hopper has "+stack.getAmount()+
+                        plugin.getLogger().finer("  hopper has "+stack.getAmount()+
                                                 " needed "+stack.getType()+
                                                 "/"+stack.getDurability()+
                                                 " at "+j);
                         int satisfyFromThis=Math.min(component.getAmount(), stack.getAmount());
                         component.setAmount(component.getAmount()-satisfyFromThis);
-                        plugin.getLogger().info("satisfied "+satisfyFromThis+", still need "+component.getAmount());
+                        plugin.getLogger().fine("satisfied "+satisfyFromThis+", still need "+component.getAmount());
                         toRemove.add(new RemovalEntry(i, j, satisfyFromThis));
                         // If we just set the last of the required
                         // amounts to 0, we're done.

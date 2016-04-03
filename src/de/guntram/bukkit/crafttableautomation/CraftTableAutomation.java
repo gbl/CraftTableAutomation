@@ -59,7 +59,7 @@ public class CraftTableAutomation extends JavaPlugin  {
     
     public CraftTableConfiguration updateBlock(Location location, Material material, CTABlockListener.UpdateType event, CraftTableConfiguration stack) {
         if (material==Material.HOPPER || material==Material.WORKBENCH)
-            getLogger().log(Level.INFO, "World "+location.getWorld().getName()+" at "+location.getBlockX()+"/"+location.getBlockY()+
+            getLogger().fine("World "+location.getWorld().getName()+" at "+location.getBlockX()+"/"+location.getBlockY()+
                 "/"+location.getBlockZ()+" Material "+material+" by event "+event);
         
         Location above=location.clone().add(0, 1, 0);
@@ -85,7 +85,7 @@ public class CraftTableAutomation extends JavaPlugin  {
     
     public boolean configureBenchAt(Location loc, CraftTableConfiguration stacks) {
         for (Location x: allWorkBenches.keySet()) {
-            getLogger().info("loc="+loc.toString()+" ,x="+x.toString()+"equal="+(loc.equals(x)));
+            getLogger().fine("loc="+loc.toString()+" ,x="+x.toString()+"equal="+(loc.equals(x)));
         }
         if (allWorkBenches.get(loc)!=null) {
             allWorkBenches.put(loc, stacks);
