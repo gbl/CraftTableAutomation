@@ -49,6 +49,12 @@ public class CraftTableProcessor implements Runnable {
     @Override
     public void run() {
         for (Map.Entry<Location, CraftTableConfiguration> entry : workBenches.entrySet()) {
+            CraftTableConfiguration config=entry.getValue();
+            
+            // Table not configured yet?
+            if (config.size()<1)
+                continue;
+            
             Location loc=entry.getKey();
             
             int x=loc.getBlockX();
@@ -64,19 +70,25 @@ public class CraftTableProcessor implements Runnable {
                 plugin.getLogger().warning("No hopper below bench at "+x+"/"+(y-1)+"/"+z);
                 continue;
             }
-            CraftTableConfiguration config=entry.getValue();
+
             Hopper receivingHopper=(Hopper)(blockBelow.getState());
             Inventory receivingInventory=receivingHopper.getInventory();
             int maxStack=receivingInventory.getMaxStackSize();
             int receivingSlot=-1;
             
+            // First, check for a slot that we can add to.
             for (int i=0; i<receivingInventory.getSize(); i++) {
-                if (receivingInventory.getItem(i).getType()==config.get(0).getMaterial()
-                &&  receivingInventory.getItem(i).getAmount()+config.get(0).getAmount() <= maxStack) {
+                ItemStack stack=receivingInventory.getItem(i);
+                if (stack==null)
+                    continue;
+                if (stack.getType()==config.get(0).getMaterial()
+                &&  stack.getDurability()==config.get(0).getSubtype()
+                &&  stack.getAmount()+config.get(0).getAmount() <= maxStack) {
                     receivingSlot=i;
                     break;
                 }
             }
+            // If nothing found, search for an empty slot.
             if (receivingSlot==-1) {
                 for (int i=0; i<receivingInventory.getSize(); i++) {
                     if (receivingInventory.getItem(i)==null) {
@@ -85,9 +97,12 @@ public class CraftTableProcessor implements Runnable {
                     }
                 }
             }
+            plugin.getLogger().info("Receiving slot is "+receivingSlot);
             if (receivingSlot==-1)
                 continue;
 
+            // Copy the recipe to a temporary array that holds how many items
+            // of which type we need. 
             RecipeComponent[] components=new RecipeComponent[config.size()-1];
             ArrayList<RemovalEntry>toRemove=new ArrayList<>();
             
@@ -96,6 +111,9 @@ public class CraftTableProcessor implements Runnable {
                 components[i]=new RecipeComponent(configEntry.getAmount(), configEntry.getMaterial(), configEntry.getSubtype());
             }
 
+            // Search hoppers around the table
+            // for these items. If we don't have enough input materials, 
+            // we're done.
             HopperConfig[] hoppers={
                 new HopperConfig(x+1, y, z, BlockFace.EAST),
                 new HopperConfig(x-1, y, z, BlockFace.WEST),
@@ -103,13 +121,49 @@ public class CraftTableProcessor implements Runnable {
                 new HopperConfig(x, y, z-1, BlockFace.NORTH),
                 new HopperConfig(x, y+1, z, BlockFace.DOWN),
             };
-            if (processHoppers(world, hoppers, components, toRemove)) {
-                plugin.getLogger().info("Requirements fulfilled at "+entry);
-                for (RemovalEntry re:toRemove) {
-                    plugin.getLogger().info("    remove "+re.amount+" from hopper "+re.hopper+" slot "+re.slot);
-                }
+            if (!processHoppers(world, hoppers, components, toRemove))
+                continue;
+            
+            plugin.getLogger().info("Requirements fulfilled at "+entry);
+            ItemStack stack;
+            if ((stack=receivingInventory.getItem(receivingSlot))==null) {
+                plugin.getLogger().info("    create new itemstack at "+receivingSlot);
+                receivingInventory.setItem(receivingSlot, new ItemStack(config.get(0).getMaterial(), config.get(0).getAmount(), (short) config.get(0).getSubtype()));
+            } else {
+                plugin.getLogger().info("    incrementing at "+receivingSlot);
+                stack.setAmount(stack.getAmount()+config.get(0).getAmount());
+                // receivingInventory.setItem(receivingSlot, stack); // is this neccesary?
             }
-        };
+            
+            removeInput(world, hoppers, toRemove);
+        }
+    }
+    
+    public void removeInput(World world, HopperConfig[] hc, ArrayList<RemovalEntry> toRemove) {
+        for (RemovalEntry re:toRemove) {
+            plugin.getLogger().info("    remove "+re.amount+" from hopper "+re.hopper+" slot "+re.slot);
+            
+            Block block=world.getBlockAt(hc[re.hopper].x, hc[re.hopper].y, hc[re.hopper].z);
+            if (block.getType()!=Material.HOPPER) {
+                plugin.getLogger().severe("Block stopped being a hopper");
+                continue;
+            }
+            Hopper hopper=(Hopper)(block.getState());
+            Inventory inv=hopper.getInventory();
+            ItemStack stack=inv.getItem(re.slot);
+            if (stack==null) {
+                plugin.getLogger().severe("Stack suddenly disappeared");
+                continue;
+            }
+            if (stack.getAmount()<=re.amount) {
+                plugin.getLogger().info("Removed last item");
+                inv.setItem(re.slot, null);
+            } else {
+                plugin.getLogger().info("Removing "+re.amount+" items");
+                stack.setAmount(stack.getAmount()-re.amount);
+                // inv.setItem(re.slot, stack); // needed?
+            }
+        }
     }
 
     public boolean processHoppers(World world, HopperConfig[] hc, RecipeComponent[] components, ArrayList<RemovalEntry>toRemove) {
