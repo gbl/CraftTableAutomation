@@ -33,8 +33,7 @@ public class CraftItemEventListener implements Listener {
     }
 
     @EventHandler
-    public void onWhatever(CraftItemEvent event) {            
-//    public void onWhatever(PrepareItemCraftEvent event) {
+    public void onPlayerCraftedItem(CraftItemEvent event) {            
         
         String name=event.getEventName();
         CraftingInventory inventory=event.getInventory();
@@ -56,9 +55,9 @@ public class CraftItemEventListener implements Listener {
                 if (plugin.configureBenchAt(loc, clone))
                     feedback="You configured your crafttable";
                 else
-                    feedback="This is not an automated crafttable";
+                    feedback=null;
             }
-            if (player!=null)
+            if (player!=null && feedback!=null)
                 player.sendMessage(feedback);
         }
     }
