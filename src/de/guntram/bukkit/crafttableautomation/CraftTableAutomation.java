@@ -164,12 +164,12 @@ public class CraftTableAutomation extends JavaPlugin  {
             }
             if (args.length==1 && args[0].equalsIgnoreCase("save")) {
                 getDataFolder().mkdirs();
-                File file=new File(getDataFolder(), "tables.txt");
-                saveConfigFile(file);
+                saveConfigFile(configFile);
+                return true;
             }
             if (args.length==1 && args[0].equalsIgnoreCase("load")) {
-                File file=new File(getDataFolder(), "tables.txt");
-                loadConfigFile(file);
+                loadConfigFile(configFile);
+                return true;
             }
         }
         return false;

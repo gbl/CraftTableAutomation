@@ -21,7 +21,8 @@ public class CraftTableConfiguration {
     public CraftTableConfiguration(int size) {
         components=new RecipeComponent[size];
     }
-    
+
+/*
     static CraftTableConfiguration fromCraftStack(ItemStack[] craftstack) {
         CraftTableConfiguration result=new CraftTableConfiguration(craftstack.length);
         
@@ -31,22 +32,35 @@ public class CraftTableConfiguration {
         }
         return result;
     }
+*/
     static CraftTableConfiguration fromRecipe(Recipe recipe) {
         
-      ArrayList<RecipeComponent> list=new ArrayList<>();
-      ItemStack stack=recipe.getResult();
-      list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
-//      Map<Character, ItemStack> ingredients=((CraftShapedRecipe)recipe).getIngredientMap();
-      Map<Character, ItemStack> ingredients=CraftItemEventHelper.getInstance().getIngredientMap(recipe);
-      for (Map.Entry<Character, ItemStack> ingredient : ingredients.entrySet()) {
-          stack=ingredient.getValue();
-          if (stack!=null)
-              list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
-      }
-      
-      CraftTableConfiguration result=new CraftTableConfiguration(list.size());
-      result.components=list.toArray(result.components);
-      return result;
+        ArrayList<RecipeComponent> list=new ArrayList<>();
+        ItemStack stack=recipe.getResult();
+        list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
+
+        Map<Character, ItemStack> ingredients=CraftItemEventHelper.getInstance().getIngredientMap(recipe);
+        for (Map.Entry<Character, ItemStack> ingredient : ingredients.entrySet()) {
+            stack=ingredient.getValue();
+            if (stack!=null) {
+                // try to find an existing entry that has the same material/subtype combination, and merge with it
+                for (int i=1; i<list.size(); i++) {
+                    RecipeComponent present = list.get(i);
+                    if (present.getMaterial()==stack.getType()
+                    &&  present.getSubtype()==stack.getDurability()) {
+                        list.set(i, new RecipeComponent(present.getAmount()+stack.getAmount(), stack.getType(), stack.getDurability()));
+                        stack=null;
+                        break;
+                    }
+                }
+                if (stack!=null)
+                  list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
+            }
+        }
+
+        CraftTableConfiguration result=new CraftTableConfiguration(list.size());
+        result.components=list.toArray(result.components);
+        return result;
     }
     
     RecipeComponent get(int i) { return components[i]; }

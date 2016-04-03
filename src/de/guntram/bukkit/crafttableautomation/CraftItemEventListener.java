@@ -42,29 +42,14 @@ public class CraftItemEventListener implements Listener {
         
         if (view.getType()==InventoryType.WORKBENCH) {
             Recipe recipe=event.getRecipe();
-//            ItemStack resultStack=recipe.getResult();
-//            int  amount    =resultStack.getAmount();
-//            int  durability=resultStack.getDurability();
-//            Material type  =resultStack.getType();
-//            getLogger().log(Level.INFO, "Crafted "+amount+" of "+type+" with durability "+durability);
-            
-//            ItemStack[] sources=inventory.getContents();
-//            for (ItemStack source : sources) {
-//                getLogger().log(Level.INFO, "Used " + source.getAmount() + " of " + source.getType() + " with durability " + source.getDurability());
-//            }
-            
+
             InventoryHolder holder=inventory.getHolder();
             Player player=null;
             if (holder!=null)
                 player=helper.getPlayer(holder);
-//            if (holder==null)
-//                getLogger().log(Level.INFO, "No Holder");
-//            else
-//                getLogger().log(Level.INFO, "Holder is a "+holder.getClass().toString());
             
             Location loc=helper.getInventoryViewLocation(view);
-//            helper.getPlayer(holder).sendMessage(loc.toString());
-            
+
             String feedback="I can't make sense of that recipe";
             if (recipe instanceof CraftShapedRecipe) {
                 CraftTableConfiguration clone=CraftTableConfiguration.fromRecipe(recipe);

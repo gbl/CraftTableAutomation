@@ -12,7 +12,7 @@ import org.bukkit.Material;
  * @author gbl
  */
 public class RecipeComponent {
-    private final int amount;
+    private int amount;
     private final Material material;
     private final int subtype;
     
@@ -44,5 +44,9 @@ public class RecipeComponent {
         }
         subtype=Integer.parseInt(parts[2]);
         return new RecipeComponent(amount, material, subtype);
+    }
+
+    void setAmount(int i) {
+        amount=i;
     }
 }
