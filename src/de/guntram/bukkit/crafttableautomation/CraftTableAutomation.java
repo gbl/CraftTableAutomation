@@ -110,6 +110,10 @@ public class CraftTableAutomation extends JavaPlugin  {
     }
     
     public void loadConfigFile(File file) {
+        if (!file.exists()) {
+            getLogger().log(Level.INFO, "No tables file found");
+            return;
+        }
         String s;
         HashMap<Location,CraftTableConfiguration> tempWorkBenches=new HashMap();
         try (BufferedReader reader=new BufferedReader(new FileReader(file))) {
