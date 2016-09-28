@@ -20,6 +20,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,10 +34,13 @@ public class CraftTableAutomation extends JavaPlugin  {
 
     private HashMap<Location,CraftTableConfiguration>allWorkBenches;
     private File autoTablesFile;
+    private Configuration config;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        config=getConfig();
+        
         CTABlockListener blockListener=new CTABlockListener(this);
         getServer().getPluginManager().registerEvents(blockListener, this);
         getServer().getPluginManager().registerEvents(new CraftItemEventListener(this), this);
@@ -101,9 +105,10 @@ public class CraftTableAutomation extends JavaPlugin  {
     public void saveAutoTablesFile(File file) {
         try (PrintWriter writer=new PrintWriter(new FileWriter(file))) {
             for (Location location:allWorkBenches.keySet()) {
-                writer.print(location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ());
-                writer.print(":");
                 CraftTableConfiguration config=allWorkBenches.get(location);
+                writer.print(location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ());
+                writer.print("/"+config.getProducedItems());
+                writer.print(":");
                 writer.print(config.toString());
                 writer.println();
             }
@@ -124,10 +129,13 @@ public class CraftTableAutomation extends JavaPlugin  {
                 String[] keyval=s.split(":");
                 assert(keyval.length==2);
                 String[] locstr=keyval[0].split("/");
-                assert(locstr.length==4);
+                assert(locstr.length==4 || locstr.length==5);
                 World world=Bukkit.getWorld(locstr[0]);
                 Location loc=new Location(world, Integer.parseInt(locstr[1]), Integer.parseInt(locstr[2]), Integer.parseInt(locstr[3]));
                 CraftTableConfiguration config=CraftTableConfiguration.fromString(keyval[1]);
+                if (locstr.length==5) {
+                    config.setProducedItems(Long.parseLong(locstr[4]));
+                }
                 tempWorkBenches.put(loc, config);
             }
             allWorkBenches.clear();

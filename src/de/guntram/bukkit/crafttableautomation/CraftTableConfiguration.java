@@ -17,6 +17,7 @@ import org.bukkit.inventory.Recipe;
  */
 public class CraftTableConfiguration {
     private RecipeComponent[] components;
+    private long producedItems;
     
     public CraftTableConfiguration(int size) {
         components=new RecipeComponent[size];
@@ -54,6 +55,8 @@ public class CraftTableConfiguration {
     
     RecipeComponent get(int i) { return components[i]; }
     int size() { return components.length; }
+    long getProducedItems() { return producedItems; }
+    void setProducedItems(long l) { producedItems=l; }
     
     @Override
     public String toString() {

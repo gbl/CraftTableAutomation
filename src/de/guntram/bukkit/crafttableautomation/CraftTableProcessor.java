@@ -27,6 +27,7 @@ public class CraftTableProcessor implements Runnable {
     
     private final CraftTableAutomation plugin;
     private final Map<Location, CraftTableConfiguration> workBenches;
+    private final long logInterval;
     private long nextLogTime;
     private long accumulatedTime;
     private int nRuns, skippedChunks, processedChunks, producedItems;
@@ -34,7 +35,8 @@ public class CraftTableProcessor implements Runnable {
     CraftTableProcessor(CraftTableAutomation cta, HashMap<Location, CraftTableConfiguration> allWorkBenches) {
         plugin=cta;
         workBenches=allWorkBenches;
-        nextLogTime=System.currentTimeMillis()+5000;
+        logInterval=cta.getConfig().getLong("loginterval", 600)*1000; // 1000 ms per sec
+        nextLogTime=System.currentTimeMillis()+logInterval;
         accumulatedTime=nRuns=skippedChunks=processedChunks=producedItems=0;
     }
     
@@ -151,24 +153,25 @@ public class CraftTableProcessor implements Runnable {
                 stack.setAmount(stack.getAmount()+config.get(0).getAmount());
                 // receivingInventory.setItem(receivingSlot, stack); // is this neccesary?
             }
-            updateStatus(world, neighbors, ""+config.get(0).getMaterial());
             removeInput(world, neighbors, toRemove);
             producedItems++;
+            config.setProducedItems(config.getProducedItems()+1);
+            updateStatus(world, neighbors, ""+config.get(0).getMaterial(), config.getProducedItems());
         }
         long endTime=System.currentTimeMillis();
         accumulatedTime+=endTime-startTime;
         nRuns++;
         
-        if (endTime > nextLogTime) {
-            plugin.getLogger().log(Level.INFO, "Used {0} Milliseconds to process {1} tables, produced {2} items, skipped {3} due to unloaded chunks", 
-                new Object[]{accumulatedTime, processedChunks, producedItems, skippedChunks});
+        if (logInterval>0 && endTime > nextLogTime) {
+            plugin.getLogger().log(Level.INFO, "Used {0} Milliseconds in {4} seconds to process {1} tables, produced {2} items, skipped {3} due to unloaded chunks", 
+                new Object[]{accumulatedTime, processedChunks, producedItems, skippedChunks, logInterval/1000});
             accumulatedTime=nRuns=skippedChunks=processedChunks=producedItems=0;
-            nextLogTime=endTime+60000;
+            nextLogTime=endTime+logInterval;
         }
         
     }
     
-    private void updateStatus(World world, BlockPositionDirection[] neighbors, String itemName) {
+    private void updateStatus(World world, BlockPositionDirection[] neighbors, String itemName, long itemcount) {
         for (int i=0; i<neighbors.length; i++) {
             Block neighborBlock=world.getBlockAt(neighbors[i].x, neighbors[i].y, neighbors[i].z);
             if (neighborBlock.getType()!=Material.WALL_SIGN)
@@ -182,22 +185,16 @@ public class CraftTableProcessor implements Runnable {
               ||  facing==4 && neighbors[i].face==BlockFace.WEST
               ||  facing==5 && neighbors[i].face==BlockFace.EAST
               ||  facing==0 && neighbors[i].face==BlockFace.UP)) {
-                plugin.getLogger().log(Level.INFO, "ignoring sign facing wrong");
+                plugin.getLogger().log(Level.FINE, "ignoring sign facing wrong");
                 continue;
             }
-            plugin.getLogger().log(Level.INFO, "updating sign");
+            plugin.getLogger().log(Level.FINE, "updating sign");
             
             Sign sign=(Sign) neighborBlock.getState();
             sign.setLine(0, "Automatic table");
             sign.setLine(1, "");
             sign.setLine(2, itemName);
-            int count;
-            try {
-                count=Integer.parseInt(sign.getLine(3));
-            } catch (NumberFormatException ex) {
-                count=0;
-            }
-            sign.setLine(3, ""+(count+1));
+            sign.setLine(3, ""+itemcount);
             sign.update(false, false);
         }
     }
