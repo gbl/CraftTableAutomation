@@ -5,7 +5,7 @@
  */
 package de.guntram.bukkit.crafttableautomation;
 
-import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelper;
+import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelperFactory;
 import java.util.ArrayList;
 import java.util.Map;
 import org.bukkit.inventory.ItemStack;
@@ -22,24 +22,13 @@ public class CraftTableConfiguration {
         components=new RecipeComponent[size];
     }
 
-/*
-    static CraftTableConfiguration fromCraftStack(ItemStack[] craftstack) {
-        CraftTableConfiguration result=new CraftTableConfiguration(craftstack.length);
-        
-        for (int i=0; i<craftstack.length; i++) {
-            result.components[i]=new RecipeComponent(craftstack[i].getAmount(), 
-                            craftstack[i].getType(), craftstack[i].getDurability());
-        }
-        return result;
-    }
-*/
     static CraftTableConfiguration fromRecipe(Recipe recipe) {
         
         ArrayList<RecipeComponent> list=new ArrayList<>();
         ItemStack stack=recipe.getResult();
         list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
 
-        Map<Character, ItemStack> ingredients=CraftItemEventHelper.getInstance().getIngredientMap(recipe);
+        Map<Character, ItemStack> ingredients=CraftItemEventHelperFactory.getInstance().getIngredientMap(recipe);
         for (Map.Entry<Character, ItemStack> ingredient : ingredients.entrySet()) {
             stack=ingredient.getValue();
             if (stack!=null) {

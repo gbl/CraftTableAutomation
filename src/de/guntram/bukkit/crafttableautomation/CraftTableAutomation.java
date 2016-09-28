@@ -32,7 +32,7 @@ public class CraftTableAutomation extends JavaPlugin  {
 
 
     private HashMap<Location,CraftTableConfiguration>allWorkBenches;
-    private File configFile;
+    private File autoTablesFile;
 
     @Override
     public void onEnable() {
@@ -41,16 +41,16 @@ public class CraftTableAutomation extends JavaPlugin  {
         getServer().getPluginManager().registerEvents(blockListener, this);
         getServer().getPluginManager().registerEvents(new CraftItemEventListener(this), this);
 
-        configFile=new File(getDataFolder(), "tables.txt");
-        allWorkBenches=new HashMap();
-        loadConfigFile(configFile);
+        autoTablesFile=new File(getDataFolder(), "tables.txt");
+        allWorkBenches=new HashMap<>();
+        loadAutoTablesFile(autoTablesFile);
         this.getServer().getScheduler().scheduleSyncRepeatingTask((Plugin)this, 
                        new CraftTableProcessor(this, allWorkBenches), 200L, 20L);        
     }
     
     @Override
     public void onDisable() {
-        saveConfigFile(configFile);
+        saveAutoTablesFile(autoTablesFile);
     }
     
     public CraftTableConfiguration updateBlock(Location location, Material material, CTABlockListener.UpdateType event) {
@@ -59,8 +59,7 @@ public class CraftTableAutomation extends JavaPlugin  {
     
     public CraftTableConfiguration updateBlock(Location location, Material material, CTABlockListener.UpdateType event, CraftTableConfiguration stack) {
         if (material==Material.HOPPER || material==Material.WORKBENCH)
-            getLogger().fine("World "+location.getWorld().getName()+" at "+location.getBlockX()+"/"+location.getBlockY()+
-                "/"+location.getBlockZ()+" Material "+material+" by event "+event);
+            getLogger().log(Level.FINE, "World {0} at {1}/{2}/{3} Material {4} by event {5}", new Object[]{location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), material, event});
         
         Location above=location.clone().add(0, 1, 0);
         Location below=location.clone().subtract(0, 1, 0);
@@ -83,19 +82,23 @@ public class CraftTableAutomation extends JavaPlugin  {
         return null;
     }
     
-    public boolean configureBenchAt(Location loc, CraftTableConfiguration stacks) {
+    public int configureBenchAt(Location loc, CraftTableConfiguration stacks, CommandSender sender) {
         for (Location x: allWorkBenches.keySet()) {
-            getLogger().fine("loc="+loc.toString()+" ,x="+x.toString()+"equal="+(loc.equals(x)));
+            getLogger().log(Level.FINE, "loc={0} ,x={1}equal={2}", new Object[]{loc.toString(), x.toString(), loc.equals(x)});
         }
         if (allWorkBenches.get(loc)!=null) {
-            allWorkBenches.put(loc, stacks);
-            return true;
+            if (sender.hasPermission("cta.use")) {
+                allWorkBenches.put(loc, stacks);
+                return 0;
+            } else {
+                return 2;
+            }
         } else {
-            return false;
+            return 1;
         }
     }
     
-    public void saveConfigFile(File file) {
+    public void saveAutoTablesFile(File file) {
         try (PrintWriter writer=new PrintWriter(new FileWriter(file))) {
             for (Location location:allWorkBenches.keySet()) {
                 writer.print(location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ());
@@ -109,13 +112,13 @@ public class CraftTableAutomation extends JavaPlugin  {
         }
     }
     
-    public void loadConfigFile(File file) {
+    public void loadAutoTablesFile(File file) {
         if (!file.exists()) {
             getLogger().log(Level.INFO, "No tables file found");
             return;
         }
         String s;
-        HashMap<Location,CraftTableConfiguration> tempWorkBenches=new HashMap();
+        HashMap<Location,CraftTableConfiguration> tempWorkBenches=new HashMap<>();
         try (BufferedReader reader=new BufferedReader(new FileReader(file))) {
             while ((s=reader.readLine())!=null) {
                 String[] keyval=s.split(":");
@@ -168,11 +171,11 @@ public class CraftTableAutomation extends JavaPlugin  {
             }
             if (args.length==1 && args[0].equalsIgnoreCase("save")) {
                 getDataFolder().mkdirs();
-                saveConfigFile(configFile);
+                saveAutoTablesFile(autoTablesFile);
                 return true;
             }
             if (args.length==1 && args[0].equalsIgnoreCase("load")) {
-                loadConfigFile(configFile);
+                loadAutoTablesFile(autoTablesFile);
                 return true;
             }
         }

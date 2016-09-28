@@ -6,5 +6,5 @@ commands:
     cta:
         description: Whatever.
         usage: /cta list
-        permission: cta.basic
+        permission: cta.commands
         permission-message: You may not use cta.

@@ -17,16 +17,9 @@ import org.bukkit.inventory.Recipe;
  *
  * @author gbl
  */
-public abstract class CraftItemEventHelper {
-    static CraftItemEventHelper instance;
+public interface CraftItemEventHelper {
     
-    public abstract Location getInventoryViewLocation(InventoryView view);
-    public abstract Player getPlayer(InventoryHolder holder);
-    public abstract Map<Character, ItemStack> getIngredientMap(Recipe recipe);
-    
-    public static CraftItemEventHelper getInstance() {
-        if (instance==null)
-            instance=new CraftItemEventHelper_1_9_R1();
-        return instance;
-    }
+    public Location getInventoryViewLocation(InventoryView view);
+    public Player getPlayer(InventoryHolder holder);
+    public Map<Character, ItemStack> getIngredientMap(Recipe recipe);
 }
