@@ -91,14 +91,17 @@ public class CraftTableAutomation extends JavaPlugin  {
         return null;
     }
     
-    public ConfigureBenchResult configureBenchAt(Location loc, CraftTableConfiguration stacks, CommandSender sender) {
+    public ConfigureBenchResult configureBenchAt(Location loc, CraftTableConfiguration config, Player player) {
         for (Location x: allWorkBenches.keySet()) {
             getLogger().log(Level.FINE, "loc={0} ,x={1}equal={2}", new Object[]{loc.toString(), x.toString(), loc.equals(x)});
         }
         if (allWorkBenches.get(loc)!=null) {
-            if (sender.hasPermission("cta.use")) {
-                if (hasClaimPermission(loc, sender)) {
-                    allWorkBenches.put(loc, stacks);
+            if (player.hasPermission("cta.use")) {
+                if (hasClaimPermission(loc, player)) {
+                    config.setOwner(player.getName());
+                    config.setProducedItems(0);
+                    allWorkBenches.put(loc, config);
+                    CraftTableProcessor.updateStatus(loc, config.get(0).getMaterial().toString(), 0, player.getName());
                     return ConfigureBenchResult.OK;
                 } else {
                     return ConfigureBenchResult.NOTINCLAIM;
@@ -117,6 +120,7 @@ public class CraftTableAutomation extends JavaPlugin  {
                 CraftTableConfiguration config=allWorkBenches.get(location);
                 writer.print(location.getWorld().getName()+"/"+location.getBlockX()+"/"+location.getBlockY()+"/"+location.getBlockZ());
                 writer.print("/"+config.getProducedItems());
+                writer.print("/"+config.getOwner());
                 writer.print(":");
                 writer.print(config.toString());
                 writer.println();
@@ -138,12 +142,17 @@ public class CraftTableAutomation extends JavaPlugin  {
                 String[] keyval=s.split(":");
                 assert(keyval.length==2);
                 String[] locstr=keyval[0].split("/");
-                assert(locstr.length==4 || locstr.length==5);
+                assert(locstr.length>=4);
                 World world=Bukkit.getWorld(locstr[0]);
                 Location loc=new Location(world, Integer.parseInt(locstr[1]), Integer.parseInt(locstr[2]), Integer.parseInt(locstr[3]));
                 CraftTableConfiguration config=CraftTableConfiguration.fromString(keyval[1]);
-                if (locstr.length==5) {
+                if (locstr.length>=5) {
                     config.setProducedItems(Long.parseLong(locstr[4]));
+                }
+                if (locstr.length>=6) {
+                    config.setOwner(locstr[5]);
+                } else {
+                    config.setOwner("");
                 }
                 tempWorkBenches.put(loc, config);
             }
@@ -164,6 +173,7 @@ public class CraftTableAutomation extends JavaPlugin  {
                     sender.sendMessage(location.toString());
                     CraftTableConfiguration content=allWorkBenches.get(location);
                     if (content!=null && content.size()>0) {
+                        sender.sendMessage("   owned by "+content.getOwner());
                         sender.sendMessage("   creating "+content.get(0).getAmount()+" of "+content.get(0).getMaterial()+" subtype "+content.get(0).getSubtype());
                         for (int i=1; i<content.size(); i++) {
                             //if (content[i].getAmount()!=0) {
@@ -199,10 +209,12 @@ public class CraftTableAutomation extends JavaPlugin  {
             if (args.length==1 && args[0].equalsIgnoreCase("save")) {
                 getDataFolder().mkdirs();
                 saveAutoTablesFile(autoTablesFile);
+                sender.sendMessage("saved current cta config");
                 return true;
             }
             if (args.length==1 && args[0].equalsIgnoreCase("load")) {
                 loadAutoTablesFile(autoTablesFile);
+                sender.sendMessage("loaded disk version of cta config");
                 return true;
             }
         }

@@ -25,7 +25,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class CraftTableProcessor implements Runnable {
     
-    private final CraftTableAutomation plugin;
+    private static CraftTableAutomation plugin;
     private final Map<Location, CraftTableConfiguration> workBenches;
     private final long logInterval;
     private long nextLogTime;
@@ -40,7 +40,7 @@ public class CraftTableProcessor implements Runnable {
         accumulatedTime=skippedChunks=processedChunks=producedItems=0;
     }
     
-    private class BlockPositionDirection {
+    private static class BlockPositionDirection {
         public int x, y, z;
         public BlockFace face;
         BlockPositionDirection(int _x, int _y, int _z, BlockFace _face) {
@@ -133,13 +133,7 @@ public class CraftTableProcessor implements Runnable {
             // Search hoppers around the table
             // for these items. If we don't have enough input materials, 
             // we're done.
-            BlockPositionDirection[] neighbors={
-                new BlockPositionDirection(x+1, y, z, BlockFace.EAST),
-                new BlockPositionDirection(x-1, y, z, BlockFace.WEST),
-                new BlockPositionDirection(x, y, z+1, BlockFace.SOUTH),
-                new BlockPositionDirection(x, y, z-1, BlockFace.NORTH),
-                new BlockPositionDirection(x, y+1, z, BlockFace.DOWN),
-            };
+            BlockPositionDirection[] neighbors=getNeighbors(x, y, z);
             if (!processHoppers(world, neighbors, components, toRemove))
                 continue;
             
@@ -156,7 +150,7 @@ public class CraftTableProcessor implements Runnable {
             removeInput(world, neighbors, toRemove);
             producedItems++;
             config.setProducedItems(config.getProducedItems()+1);
-            updateStatus(world, neighbors, ""+config.get(0).getMaterial(), config.getProducedItems());
+            updateStatus(world, neighbors, ""+config.get(0).getMaterial().toString(), config.getProducedItems(), config.getOwner());
         }
         long endTime=System.currentTimeMillis();
         accumulatedTime+=endTime-startTime;
@@ -170,7 +164,22 @@ public class CraftTableProcessor implements Runnable {
         
     }
     
-    private void updateStatus(World world, BlockPositionDirection[] neighbors, String itemName, long itemcount) {
+    private static BlockPositionDirection[] getNeighbors(int x, int y, int z) {
+        BlockPositionDirection[] neighbors = {
+            new BlockPositionDirection(x+1, y, z, BlockFace.EAST),
+            new BlockPositionDirection(x-1, y, z, BlockFace.WEST),
+            new BlockPositionDirection(x, y, z+1, BlockFace.SOUTH),
+            new BlockPositionDirection(x, y, z-1, BlockFace.NORTH),
+            new BlockPositionDirection(x, y+1, z, BlockFace.DOWN),
+        };
+        return neighbors;
+    }
+    
+    public static void updateStatus(Location loc, String itemName, long itemcount, String owner) {
+        updateStatus(loc.getWorld(), getNeighbors(loc.getBlockX(),loc.getBlockY(),loc.getBlockZ()), itemName, itemcount, owner);
+    }
+    
+    private static void updateStatus(World world, BlockPositionDirection[] neighbors, String itemName, long itemcount, String owner) {
         for (int i=0; i<neighbors.length; i++) {
             Block neighborBlock=world.getBlockAt(neighbors[i].x, neighbors[i].y, neighbors[i].z);
             if (neighborBlock.getType()!=Material.WALL_SIGN)
@@ -191,7 +200,7 @@ public class CraftTableProcessor implements Runnable {
             
             Sign sign=(Sign) neighborBlock.getState();
             sign.setLine(0, "Automatic table");
-            sign.setLine(1, "");
+            sign.setLine(1, owner);
             sign.setLine(2, itemName);
             sign.setLine(3, ""+itemcount);
             sign.update(false, false);
