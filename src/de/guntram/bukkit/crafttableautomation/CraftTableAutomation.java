@@ -34,16 +34,17 @@ public class CraftTableAutomation extends JavaPlugin  {
 
     private HashMap<Location,CraftTableConfiguration>allWorkBenches;
     private File autoTablesFile;
-    private Configuration config;
+    private Plugin griefPrevention;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        config=getConfig();
         
         CTABlockListener blockListener=new CTABlockListener(this);
         getServer().getPluginManager().registerEvents(blockListener, this);
         getServer().getPluginManager().registerEvents(new CraftItemEventListener(this), this);
+
+        griefPrevention=getServer().getPluginManager().getPlugin("GriefPrevention");
 
         autoTablesFile=new File(getDataFolder(), "tables.txt");
         allWorkBenches=new HashMap<>();

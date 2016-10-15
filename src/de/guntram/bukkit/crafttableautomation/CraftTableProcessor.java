@@ -30,14 +30,14 @@ public class CraftTableProcessor implements Runnable {
     private final long logInterval;
     private long nextLogTime;
     private long accumulatedTime;
-    private int nRuns, skippedChunks, processedChunks, producedItems;
+    private int skippedChunks, processedChunks, producedItems;
 
     CraftTableProcessor(CraftTableAutomation cta, HashMap<Location, CraftTableConfiguration> allWorkBenches) {
         plugin=cta;
         workBenches=allWorkBenches;
         logInterval=cta.getConfig().getLong("loginterval", 600)*1000; // 1000 ms per sec
         nextLogTime=System.currentTimeMillis()+logInterval;
-        accumulatedTime=nRuns=skippedChunks=processedChunks=producedItems=0;
+        accumulatedTime=skippedChunks=processedChunks=producedItems=0;
     }
     
     private class BlockPositionDirection {
@@ -160,12 +160,11 @@ public class CraftTableProcessor implements Runnable {
         }
         long endTime=System.currentTimeMillis();
         accumulatedTime+=endTime-startTime;
-        nRuns++;
-        
+                
         if (logInterval>0 && endTime > nextLogTime) {
             plugin.getLogger().log(Level.INFO, "Used {0} Milliseconds in {4} seconds to process {1} tables, produced {2} items, skipped {3} due to unloaded chunks", 
                 new Object[]{accumulatedTime, processedChunks, producedItems, skippedChunks, logInterval/1000});
-            accumulatedTime=nRuns=skippedChunks=processedChunks=producedItems=0;
+            accumulatedTime=skippedChunks=processedChunks=producedItems=0;
             nextLogTime=endTime+logInterval;
         }
         
