@@ -86,12 +86,6 @@ public class CraftTableAutomation extends JavaPlugin  {
         return null;
     }
     
-    enum ConfigureBenchResult {
-        OK,
-        NOWORKBENCHATTHISLOC,
-        NOPERMISSION,
-    };
-    
     public ConfigureBenchResult configureBenchAt(Location loc, CraftTableConfiguration stacks, CommandSender sender) {
         for (Location x: allWorkBenches.keySet()) {
             getLogger().log(Level.FINE, "loc={0} ,x={1}equal={2}", new Object[]{loc.toString(), x.toString(), loc.equals(x)});

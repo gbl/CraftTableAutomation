@@ -5,7 +5,6 @@
  */
 package de.guntram.bukkit.crafttableautomation;
 
-import de.guntram.bukkit.crafttableautomation.CraftTableAutomation.ConfigureBenchResult;
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelper;
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelperFactory;
 import org.bukkit.Location;
