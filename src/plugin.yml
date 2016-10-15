@@ -1,7 +1,7 @@
 ## YAML Template.
 name: CraftTableAutomation
 main: de.guntram.bukkit.crafttableautomation.CraftTableAutomation
-version: 0.2
+version: 0.3
 commands:
     cta:
         description: Whatever.
