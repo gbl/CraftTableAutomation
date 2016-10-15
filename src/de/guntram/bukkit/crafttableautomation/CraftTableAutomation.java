@@ -86,19 +86,25 @@ public class CraftTableAutomation extends JavaPlugin  {
         return null;
     }
     
-    public int configureBenchAt(Location loc, CraftTableConfiguration stacks, CommandSender sender) {
+    enum ConfigureBenchResult {
+        OK,
+        NOWORKBENCHATTHISLOC,
+        NOPERMISSION,
+    };
+    
+    public ConfigureBenchResult configureBenchAt(Location loc, CraftTableConfiguration stacks, CommandSender sender) {
         for (Location x: allWorkBenches.keySet()) {
             getLogger().log(Level.FINE, "loc={0} ,x={1}equal={2}", new Object[]{loc.toString(), x.toString(), loc.equals(x)});
         }
         if (allWorkBenches.get(loc)!=null) {
             if (sender.hasPermission("cta.use")) {
                 allWorkBenches.put(loc, stacks);
-                return 0;
+                return ConfigureBenchResult.OK;
             } else {
-                return 2;
+                return ConfigureBenchResult.NOPERMISSION;
             }
         } else {
-            return 1;
+            return ConfigureBenchResult.NOWORKBENCHATTHISLOC;
         }
     }
     

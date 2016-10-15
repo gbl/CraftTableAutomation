@@ -5,6 +5,7 @@
  */
 package de.guntram.bukkit.crafttableautomation;
 
+import de.guntram.bukkit.crafttableautomation.CraftTableAutomation.ConfigureBenchResult;
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelper;
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelperFactory;
 import org.bukkit.Location;
@@ -54,17 +55,17 @@ public class CraftItemEventListener implements Listener {
             Location loc=helper.getInventoryViewLocation(view);
 
             String feedback;
-            int result;
+            ConfigureBenchResult result;
             CraftTableConfiguration clone=CraftTableConfiguration.fromRecipe(recipe);
             if (player==null) {
                 feedback="I don't know who you are!";  // which is nice but how to send it ??
             } else if (clone==null) {
                 feedback="Failed to get the recipe from this workbench - probably missing support for this MC version";
-            } else  if ((result=ctaPlugin.configureBenchAt(loc, clone, player))==0)
+            } else  if ((result=ctaPlugin.configureBenchAt(loc, clone, player))==ConfigureBenchResult.OK) {
                 feedback="You configured your crafttable";
-            else if (result==1) {           // not a automated table
+            } else if (result==ConfigureBenchResult.NOWORKBENCHATTHISLOC) {           // not a automated table
                 feedback=null;
-            } else if (result==2) {
+            } else if (result==ConfigureBenchResult.NOPERMISSION) {
                 feedback="You may not configure auto craft tables (need cta.use)";
             } else {
                 feedback="I can't make sense of that recipe";
