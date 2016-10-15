@@ -1,2 +1,12 @@
 logInterval: 600
+usegriefprevention: true
 
+messages:
+    playerunknown:      "I don't know who you are"
+    nmsunsupported:     "Failed to get the recipe from this workbench - probably missing NMS support for this MC version"
+    configuredok:       "You configured your crafttable"
+# nocrafttablehere should be a null message, or players will get that message when they're using a non-cta crafttable
+    nocrafttablehere:   ""
+    nopermission:       "You may not use auto craft tables (needs cta.use)"
+    notinclaim:         "Configuring an auto craft table in a claim needs access trust"
+    unknownerror:       "I can't make sense of that recipe"

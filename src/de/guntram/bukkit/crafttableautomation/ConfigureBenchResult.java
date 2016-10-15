@@ -13,4 +13,5 @@ public enum ConfigureBenchResult {
     OK,
     NOWORKBENCHATTHISLOC,
     NOPERMISSION,
+    NOTINCLAIM,
 }

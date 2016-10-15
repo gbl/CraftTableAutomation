@@ -57,20 +57,30 @@ public class CraftItemEventListener implements Listener {
             ConfigureBenchResult result;
             CraftTableConfiguration clone=CraftTableConfiguration.fromRecipe(recipe);
             if (player==null) {
-                feedback="I don't know who you are!";  // which is nice but how to send it ??
+                feedback=getFeedback("playerunknown");  // which is nice but how to send it ??
             } else if (clone==null) {
-                feedback="Failed to get the recipe from this workbench - probably missing support for this MC version";
+                feedback=getFeedback("nmsunsupported");
             } else  if ((result=ctaPlugin.configureBenchAt(loc, clone, player))==ConfigureBenchResult.OK) {
-                feedback="You configured your crafttable";
+                feedback=getFeedback("configuredok");
             } else if (result==ConfigureBenchResult.NOWORKBENCHATTHISLOC) {           // not a automated table
-                feedback=null;
+                feedback=getFeedback("nocrafttablehere");
             } else if (result==ConfigureBenchResult.NOPERMISSION) {
-                feedback="You may not configure auto craft tables (need cta.use)";
+                feedback=getFeedback("nopermission");
+            } else if (result==ConfigureBenchResult.NOTINCLAIM) {
+                feedback=getFeedback("notinclaim");
             } else {
-                feedback="I can't make sense of that recipe";
+                feedback=getFeedback("unknownerror");
             }
             if (player!=null && feedback!=null)
                 player.sendMessage(feedback);
         }
+    }
+
+    String getFeedback(String key) {
+        String result;
+        result=ctaPlugin.getConfig().getString("messages."+key, "Error: "+key);
+        if (result==null || result.isEmpty())
+            return null;
+        return result;
     }
 }

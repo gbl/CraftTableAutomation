@@ -14,13 +14,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.logging.Level;
+import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.DataStore;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,7 +37,8 @@ public class CraftTableAutomation extends JavaPlugin  {
     private HashMap<Location,CraftTableConfiguration>allWorkBenches;
     private File autoTablesFile;
     private Plugin griefPrevention;
-
+    private boolean useGP;
+    
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -45,6 +48,7 @@ public class CraftTableAutomation extends JavaPlugin  {
         getServer().getPluginManager().registerEvents(new CraftItemEventListener(this), this);
 
         griefPrevention=getServer().getPluginManager().getPlugin("GriefPrevention");
+        useGP=getConfig().getBoolean("usegriefprevention", true);
 
         autoTablesFile=new File(getDataFolder(), "tables.txt");
         allWorkBenches=new HashMap<>();
@@ -93,8 +97,12 @@ public class CraftTableAutomation extends JavaPlugin  {
         }
         if (allWorkBenches.get(loc)!=null) {
             if (sender.hasPermission("cta.use")) {
-                allWorkBenches.put(loc, stacks);
-                return ConfigureBenchResult.OK;
+                if (hasClaimPermission(loc, sender)) {
+                    allWorkBenches.put(loc, stacks);
+                    return ConfigureBenchResult.OK;
+                } else {
+                    return ConfigureBenchResult.NOTINCLAIM;
+                }
             } else {
                 return ConfigureBenchResult.NOPERMISSION;
             }
@@ -166,6 +174,16 @@ public class CraftTableAutomation extends JavaPlugin  {
                 }
                 return true;
             }
+            if (args.length>=1 && args[0].equalsIgnoreCase("usegp")) {
+                if (args.length>=2) {
+                    if (args[1].equalsIgnoreCase("true") || args[1].equalsIgnoreCase("yes"))
+                        useGP=true;
+                    else
+                        useGP=false;
+                }
+                sender.sendMessage("use Grief Prevention is now "+useGP);
+                return true;
+            }
             if (args.length==1 && args[0].equalsIgnoreCase("testlocs") && sender instanceof Player) {
                 Location l1=new Location(((Player)sender).getWorld(), 10, 11, 12);
                 Location l2=new Location(((Player)sender).getWorld(), 20, 21, 22);
@@ -187,6 +205,19 @@ public class CraftTableAutomation extends JavaPlugin  {
                 loadAutoTablesFile(autoTablesFile);
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean hasClaimPermission(Location loc, CommandSender sender) {
+        if (griefPrevention==null || useGP==false)
+            return true;
+        if (!(sender instanceof Player))
+            return false;
+        DataStore store=GriefPrevention.instance.dataStore;
+        Claim claim = store.getClaimAt(loc, true, null);
+        if (claim==null || claim.allowAccess((Player)sender)==null) {
+            return true;
         }
         return false;
     }
