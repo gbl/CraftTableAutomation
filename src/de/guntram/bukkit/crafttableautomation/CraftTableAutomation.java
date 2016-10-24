@@ -38,6 +38,7 @@ public class CraftTableAutomation extends JavaPlugin  {
     private File autoTablesFile;
     private Plugin griefPrevention;
     private boolean useGP;
+    private boolean displayItemCount;
     
     @Override
     public void onEnable() {
@@ -49,6 +50,7 @@ public class CraftTableAutomation extends JavaPlugin  {
 
         griefPrevention=getServer().getPluginManager().getPlugin("GriefPrevention");
         useGP=getConfig().getBoolean("usegriefprevention", true);
+        displayItemCount=getConfig().getBoolean("displayitemcount", false);
 
         autoTablesFile=new File(getDataFolder(), "tables.txt");
         allWorkBenches=new HashMap<>();
@@ -170,6 +172,7 @@ public class CraftTableAutomation extends JavaPlugin  {
             if (args.length==1 && args[0].equalsIgnoreCase("list")) {
                 sender.sendMessage("§2"+allWorkBenches.size()+" Automatic Crafttables");
                 for (Location location:allWorkBenches.keySet()) {
+                    sender.sendMessage("§2-----------------------");
                     sender.sendMessage(location.toString());
                     CraftTableConfiguration content=allWorkBenches.get(location);
                     if (content!=null && content.size()>0) {
@@ -232,5 +235,9 @@ public class CraftTableAutomation extends JavaPlugin  {
             return true;
         }
         return false;
+    }
+
+    public boolean getDisplayItemCount() {
+        return displayItemCount;
     }
 }

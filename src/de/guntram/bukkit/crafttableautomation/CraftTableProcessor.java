@@ -149,7 +149,7 @@ public class CraftTableProcessor implements Runnable {
             }
             removeInput(world, neighbors, toRemove);
             producedItems++;
-            config.setProducedItems(config.getProducedItems()+1);
+            config.setProducedItems(config.getProducedItems()+(plugin.getDisplayItemCount() ? config.get(0).getAmount() : 1));
             updateStatus(world, neighbors, ""+config.get(0).getMaterial().toString(), config.getProducedItems(), config.getOwner());
         }
         long endTime=System.currentTimeMillis();

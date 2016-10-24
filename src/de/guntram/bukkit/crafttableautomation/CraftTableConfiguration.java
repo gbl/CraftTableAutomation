@@ -8,6 +8,8 @@ package de.guntram.bukkit.crafttableautomation;
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelperFactory;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.logging.Level;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -31,6 +33,20 @@ public class CraftTableConfiguration {
         list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
 
         Map<Character, ItemStack> ingredients=CraftItemEventHelperFactory.getInstance().getIngredientMap(recipe);
+        ItemStack is;
+        if (ingredients==null) {
+            Bukkit.getLogger().log(Level.WARNING, "ingredients is null");
+            if ((is=recipe.getResult())!=null)
+                Bukkit.getLogger().log(Level.WARNING, "Crafting: "+is.getType().toString());
+            return null;
+        }
+        if (ingredients.entrySet()==null) {
+            Bukkit.getLogger().log(Level.WARNING, "ingredients.entrySet is null");
+            if ((is=recipe.getResult())!=null)
+                Bukkit.getLogger().log(Level.WARNING, "Crafting: "+is.getType().toString());
+            return null;
+        }
+
         for (Map.Entry<Character, ItemStack> ingredient : ingredients.entrySet()) {
             stack=ingredient.getValue();
             if (stack!=null) {
