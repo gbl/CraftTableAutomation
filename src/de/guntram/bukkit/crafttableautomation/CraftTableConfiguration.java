@@ -7,6 +7,7 @@ package de.guntram.bukkit.crafttableautomation;
 
 import de.guntram.bukkit.crafttableautomation.helpers.CraftItemEventHelperFactory;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -32,23 +33,20 @@ public class CraftTableConfiguration {
         ItemStack stack=recipe.getResult();
         list.add(new RecipeComponent(stack.getAmount(), stack.getType(), stack.getDurability()));
 
-        Map<Character, ItemStack> ingredients=CraftItemEventHelperFactory.getInstance().getIngredientMap(recipe);
-        ItemStack is;
+        Collection<ItemStack> ingredients=CraftItemEventHelperFactory.getInstance().getIngredientCollection(recipe);
         if (ingredients==null) {
             Bukkit.getLogger().log(Level.WARNING, "ingredients is null");
-            if ((is=recipe.getResult())!=null)
-                Bukkit.getLogger().log(Level.WARNING, "Crafting: "+is.getType().toString());
+            Bukkit.getLogger().log(Level.WARNING, "Crafting: "+stack.getType().toString());
             return null;
         }
-        if (ingredients.entrySet()==null) {
-            Bukkit.getLogger().log(Level.WARNING, "ingredients.entrySet is null");
-            if ((is=recipe.getResult())!=null)
-                Bukkit.getLogger().log(Level.WARNING, "Crafting: "+is.getType().toString());
+        if (ingredients.isEmpty()) {
+            Bukkit.getLogger().log(Level.WARNING, "ingredients is empty");
+            Bukkit.getLogger().log(Level.WARNING, "Crafting: "+stack.getType().toString());
             return null;
         }
 
-        for (Map.Entry<Character, ItemStack> ingredient : ingredients.entrySet()) {
-            stack=ingredient.getValue();
+        for (ItemStack ingredient: ingredients) {
+            stack=ingredient;               // to be refactored; remains from old code
             if (stack!=null) {
                 // try to find an existing entry that has the same material/subtype combination, and merge with it
                 for (int i=1; i<list.size(); i++) {

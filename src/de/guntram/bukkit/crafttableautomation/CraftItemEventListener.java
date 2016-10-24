@@ -44,6 +44,9 @@ public class CraftItemEventListener implements Listener {
             return;
         
         if (view.getType()==InventoryType.WORKBENCH) {
+            Location loc=helper.getInventoryViewLocation(view);
+            if (!ctaPlugin.isBenchAt(loc))
+                return;
             Recipe recipe=event.getRecipe();
 
             InventoryHolder holder=inventory.getHolder();
@@ -51,7 +54,6 @@ public class CraftItemEventListener implements Listener {
             if (holder!=null)
                 player=helper.getPlayer(holder);
             
-            Location loc=helper.getInventoryViewLocation(view);
 
             String feedback;
             ConfigureBenchResult result;

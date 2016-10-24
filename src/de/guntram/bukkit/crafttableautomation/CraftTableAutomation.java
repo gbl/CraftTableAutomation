@@ -116,6 +116,10 @@ public class CraftTableAutomation extends JavaPlugin  {
         }
     }
     
+    public boolean isBenchAt(Location loc) {
+        return allWorkBenches.get(loc)!=null;
+    }
+    
     public void saveAutoTablesFile(File file) {
         try (PrintWriter writer=new PrintWriter(new FileWriter(file))) {
             for (Location location:allWorkBenches.keySet()) {

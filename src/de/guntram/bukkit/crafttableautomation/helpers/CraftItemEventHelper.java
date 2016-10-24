@@ -5,7 +5,7 @@
  */
 package de.guntram.bukkit.crafttableautomation.helpers;
 
-import java.util.Map;
+import java.util.Collection;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
@@ -21,5 +21,5 @@ public interface CraftItemEventHelper {
     
     public Location getInventoryViewLocation(InventoryView view);
     public Player getPlayer(InventoryHolder holder);
-    public Map<Character, ItemStack> getIngredientMap(Recipe recipe);
+    public Collection<ItemStack> getIngredientCollection(Recipe recipe);
 }
