@@ -252,6 +252,8 @@ public class CraftTableProcessor implements Runnable {
             @SuppressWarnings("deprecation")
             int facing=neighborBlock.getData();
             
+            // nb: bit 3 of facing is set (facing & 0x8 == 0x8) when the hopper
+            // is disabled, so this ALSO stops pulling from disabled hoppers.
             if (!(facing==2 && neighbors[i].face==BlockFace.SOUTH
               ||  facing==3 && neighbors[i].face==BlockFace.NORTH
               ||  facing==4 && neighbors[i].face==BlockFace.EAST
