@@ -24,6 +24,8 @@ public class CraftItemEventHelperFactory {
                 instance=new CraftItemEventHelper_1_9_R1();
             else if (version.equals("v1_10_R1"))
                 instance=new CraftItemEventHelper_1_10_R1();
+            else if (version.equals("v1_11_R1"))
+                instance=new CraftItemEventHelper_1_11_R1();
             else
                 Bukkit.getLogger().log(Level.WARNING, "No NMS code for MC Version {0}", version);
         }

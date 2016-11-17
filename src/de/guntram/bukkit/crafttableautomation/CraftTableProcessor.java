@@ -98,7 +98,8 @@ public class CraftTableProcessor implements Runnable {
             // First, check for a slot that we can add to.
             for (int i=0; i<receivingInventory.getSize(); i++) {
                 ItemStack stack=receivingInventory.getItem(i);
-                if (stack==null)
+                plugin.getLogger().log(Level.FINE, "stack in lower hopper at {0} is {1}", new Object[]{i, stack.toString()});
+                if (stack==null || stack.getType()==Material.AIR)
                     continue;
                 if (stack.getType()==config.get(0).getMaterial()
                 &&  stack.getDurability()==config.get(0).getSubtype()
@@ -110,7 +111,8 @@ public class CraftTableProcessor implements Runnable {
             // If nothing found, search for an empty slot.
             if (receivingSlot==-1) {
                 for (int i=0; i<receivingInventory.getSize(); i++) {
-                    if (receivingInventory.getItem(i)==null) {
+                    if (receivingInventory.getItem(i)==null
+                    ||  receivingInventory.getItem(i).getType()==Material.AIR) {
                         receivingSlot=i;
                         break;
                     }
@@ -139,7 +141,8 @@ public class CraftTableProcessor implements Runnable {
             
             plugin.getLogger().log(Level.FINE, "Requirements fulfilled at {0}", entry);
             ItemStack stack;
-            if ((stack=receivingInventory.getItem(receivingSlot))==null) {
+            if ((stack=receivingInventory.getItem(receivingSlot))==null
+            ||   stack.getType()==Material.AIR) {
                 plugin.getLogger().log(Level.FINER, "    create new itemstack at {0}", receivingSlot);
                 receivingInventory.setItem(receivingSlot, new ItemStack(config.get(0).getMaterial(), config.get(0).getAmount(), (short) config.get(0).getSubtype()));
             } else {
@@ -224,7 +227,7 @@ public class CraftTableProcessor implements Runnable {
                 continue;
             }
             if (stack.getAmount()<=re.amount) {
-                plugin.getLogger().finer("Removed last item");
+                plugin.getLogger().log(Level.FINER, "Removed last item");
                 inv.setItem(re.slot, null);
             } else {
                 plugin.getLogger().log(Level.FINER, "Removing {0} items", re.amount);

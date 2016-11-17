@@ -75,6 +75,7 @@
             <zipfileset src="dist/CraftTableAutomation.jar" />
             <zipfileset src="../CraftTableAutomationNMS_1_9_R1/dist/CraftTableAutomationNMS_1_9_R1.jar" />
             <zipfileset src="../CraftTableAutomationNMS_1_10_R1/dist/CraftTableAutomationNMS_1_10_R1.jar" />
+            <zipfileset src="../CraftTableAutomationNMS_1_11_R1/dist/CraftTableAutomationNMS_1_11_R1.jar" />
         </jar>
     </target>
 </project>
