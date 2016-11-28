@@ -98,7 +98,7 @@ public class CraftTableProcessor implements Runnable {
             // First, check for a slot that we can add to.
             for (int i=0; i<receivingInventory.getSize(); i++) {
                 ItemStack stack=receivingInventory.getItem(i);
-                plugin.getLogger().log(Level.FINE, "stack in lower hopper at {0} is {1}", new Object[]{i, stack.toString()});
+                plugin.getLogger().log(Level.FINE, "stack in lower hopper at {0} is {1}", new Object[]{i, stack==null ? "null" : stack.toString()});
                 if (stack==null || stack.getType()==Material.AIR)
                     continue;
                 if (stack.getType()==config.get(0).getMaterial()
